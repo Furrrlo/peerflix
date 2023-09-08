@@ -21,6 +21,7 @@ process.title = 'peerflix'
 var argv = rc('peerflix', {}, optimist
   .usage('Usage: $0 magnet-link-or-torrent [options]')
   .alias('c', 'connections').describe('c', 'max connected peers').default('c', os.cpus().length > 1 ? 100 : 30)
+  .alias('u', 'uploads').describe('u', 'max upload slots').default('u', 0)
   .alias('p', 'port').describe('p', 'change the http port').default('p', 8888)
   .alias('i', 'index').describe('i', 'changed streamed file (index)')
   .alias('l', 'list').describe('l', 'list available files with corresponding index').boolean('l')
