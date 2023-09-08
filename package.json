@@ -17,10 +17,9 @@
     "peerflix": "./app.js"
   },
   "dependencies": {
-    "airplayer": "^2.0.0",
+    "@inquirer/select": "^1.2.9",
     "buffer-from": "^1.0.0",
     "clivas": "^0.2.0",
-    "inquirer": "^5.0.1",
     "keypress": "^0.2.1",
     "mime": "^2.2.0",
     "network-address": "^1.1.0",

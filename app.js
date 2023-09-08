@@ -10,7 +10,7 @@ var proc = require('child_process')
 var peerflix = require('./')
 var keypress = require('keypress')
 var openUrl = require('open')
-var inquirer = require('inquirer')
+var inquirer = require('@inquirer/select').default;
 var parsetorrent = require('parse-torrent')
 var bufferFrom = require('buffer-from')
 
@@ -27,6 +27,7 @@ var argv = rc('peerflix', {}, optimist
   .alias('l', 'list').describe('l', 'list available files with corresponding index').boolean('l')
   .alias('t', 'subtitles').describe('t', 'load subtitles file')
   .alias('q', 'quiet').describe('q', 'be quiet').boolean('v')
+  .describe('select-player', 'ask which player to use to autoplay').boolean('v')
   .alias('v', 'vlc').describe('v', 'autoplay in vlc*').boolean('v')
   .alias('s', 'airplay').describe('s', 'autoplay via AirPlay').boolean('a')
   .alias('m', 'mplayer').describe('m', 'autoplay in mplayer*').boolean('m')
@@ -149,30 +150,52 @@ var ontorrent = function (torrent) {
     return numeral(num).format('0.0b')
   }
 
-  if (argv.list) {
+  if (argv.list || argv['select-player']) {
     var interactive = process.stdout.isTTY && process.stdin.isTTY && !!process.stdin.setRawMode
 
     var onready = function () {
       if (interactive) {
-        var filenamesInOriginalOrder = engine.files.map(file => file.path)
-        inquirer.prompt([{
-          type: 'list',
-          name: 'file',
-          message: 'Choose one file',
-          choices: Array.from(engine.files)
-            .sort((file1, file2) => file1.path.localeCompare(file2.path))
-            .map(function (file, i) {
-              return {
-                name: file.name + ' : ' + bytes(file.length),
-                value: filenamesInOriginalOrder.indexOf(file.path)
-              }
-            })
-        }]).then(function (answers) {
-          argv.index = answers.file
-          delete argv.list
+        var filenamesInOriginalOrder = engine.files.map(file => file.path);
+        (async () => {
+          if(argv.list) {
+            const answers = await inquirer({
+              message: 'Choose one file',
+              choices: Array.from(engine.files)
+                .sort((file1, file2) => file1.path.localeCompare(file2.path))
+                .map(function (file, i) {
+                  return {
+                    name: file.name + ' : ' + bytes(file.length),
+                    value: filenamesInOriginalOrder.indexOf(file.path)
+                  }
+                })
+            });
+            argv.index = answers.file
+            delete argv.list
+          }
+          
+          if(argv['select-player']) {
+            const player = await inquirer({
+              message: 'Open a player',
+              choices: [
+                { value: 'vlc',       name: 'autoplay in vlc*'                       },
+                { value: 'airplay',   name: 'autoplay via AirPlay'                   },
+                { value: 'mplayer',   name: 'autoplay in mplayer*'                   },
+                { value: 'smplayer',  name: 'autoplay in smplayer*'                  },
+                { value: 'mpchc',     name: 'autoplay in MPC-HC player*'             },
+                { value: 'potplayer', name: 'autoplay in Potplayer*'                 },
+                { value: 'mpv',       name: 'autoplay in mpv*'                       },
+                { value: 'omx',       name: 'autoplay in omx**'                      },
+                { value: 'webplay',   name: 'autoplay in webplay'                    },
+                { value: 'jack',      name: 'autoplay in omx** using the audio jack' },
+              ]
+            });
+            argv[player] = true;
+            delete argv['select-player']
+          }
+          
           ontorrent(torrent)
-        })
-      } else {
+        })();
+      } else if(argv.list) {
         engine.files.forEach(function (file, i, files) {
           clivas.line('{3+bold:' + i + '} : {magenta:' + file.name + '} : {blue:' + bytes(file.length) + '}')
         })
