@@ -50,11 +50,30 @@ var argv = rc('peerflix', {}, optimist
   .describe('on-downloaded', 'script to call when file is 100% downloaded')
   .describe('on-listening', 'script to call when server goes live')
   .describe('version', 'prints current version').boolean('boolean')
+  .describe('register-magnet', 'register magnet protocol handler').boolean('boolean')
+  .describe('force', 'forces registration of magnet protocol, overwriting any previous handler').boolean('boolean')
   .argv)
 
 if (argv.version) {
   console.error(require('./package').version)
   process.exit(0)
+}
+
+if (argv['register-magnet']) {
+  const ProtocolRegistry = require("protocol-registry");
+  console.log(`Registering magnet protocol handler${argv.force ? ' forcefully' : ''}...`);
+
+  ProtocolRegistry.register({
+    protocol: "magnet",
+    command: `node ${path.join(__dirname, "./app.js")} $_URL_ --list --select-player`,
+    override: argv.force, // Use this with caution as it will destroy all previous Registrations on this protocol
+    terminal: true,
+    script: true,
+  }).then(async () => {
+    console.log("Successfully registered");
+    process.exit(0)
+  });
+  return;
 }
 
 var filename = argv._[0]

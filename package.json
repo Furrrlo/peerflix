@@ -27,6 +27,7 @@
     "open": "0.0.5",
     "optimist": "^0.6.1",
     "parse-torrent": "^5.4.0",
+    "protocol-registry": "^1.4.1",
     "pump": "^2.0.0",
     "range-parser": "^1.0.0",
     "rc": "^1.1.6",
