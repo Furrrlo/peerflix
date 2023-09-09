@@ -65,7 +65,12 @@ if (argv['register-magnet']) {
 
   ProtocolRegistry.register({
     protocol: "magnet",
-    command: `node "${path.join(__dirname, "./app.js")}" "$_URL_" --list --select-player -f "${path.join(__dirname, "./cache")}"`,
+    command: process.platform === "win32" 
+      // ProtocolRegistry escapes "$_URL_" in a script file as "%~1%" which apparently is wrong because
+      // the trailing % is not part of the first arg, but it does some weird stuff and messes with args
+      // so let's just not wrap it with "", so it will simply replace it with %1 (and somehow work)
+      ? `node "${path.join(__dirname, "./app.js")}" $_URL_ --list --select-player -f "${path.join(__dirname, "./cache")}"`
+      : `node "${path.join(__dirname, "./app.js")}" "$_URL_" --list --select-player -f "${path.join(__dirname, "./cache")}"`,
     override: argv.force, // Use this with caution as it will destroy all previous Registrations on this protocol
     terminal: true,
     script: true,
