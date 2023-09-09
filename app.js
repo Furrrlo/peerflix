@@ -65,7 +65,7 @@ if (argv['register-magnet']) {
 
   ProtocolRegistry.register({
     protocol: "magnet",
-    command: `node "${path.join(__dirname, "./app.js")}" "$_URL_" --list --select-player`,
+    command: `node "${path.join(__dirname, "./app.js")}" "$_URL_" --list --select-player -f "${path.join(__dirname, "./cache")}"`,
     override: argv.force, // Use this with caution as it will destroy all previous Registrations on this protocol
     terminal: true,
     script: true,
