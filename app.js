@@ -193,7 +193,7 @@ var ontorrent = function (torrent) {
                   }
                 })
             });
-            argv.index = answers.file
+            argv.index = answers
             delete argv.list
           }
           
